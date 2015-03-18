@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>Rastreador COESA</title>
+    <meta name="author" content="Rodrigo Castro Azevedo">
+    <meta name="description" content="A simple GPS bus tracker">
+  </head>
+  <body>
+    <div id="map-canvas"></div>
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js" type="text/javascript"></script>
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyA9nn-Fx84AjD9fIksVuwBZkgmmtamMcpc"></script>
+    <script>
+    
+      var coesaParams = "(F(3hEPH9PFloTVKHLJId3Z7GHO44DaPXLFxfg46-yDP9ZeW4aUeTqXui5mRiGovd2IrJIdsJ9yPsbrJZHpMVh5K3KiaW6lW2CSxQsSOz0_vTBlIMDgw-jbbhN_VRoa6Qd6tjN2daj3eQ3dDQezB_ImHc5AZoc1)S(wog5omaulb3nq4asv5ng0i1p))";
+      var coesaApiUrl = "http://coesa.com/coesa.com/RESTAPI/" + coesaParams + "/";
+      
+      var coesaGPSUrl = coesaApiUrl + "MobileActualState/Get?route=";
+      var coesaRVDUrl = coesaApiUrl + "RouteVariantDirection/GetActiveByRoute?id=";
+      var coesaBusStopUrl = coesaApiUrl + "BusStopRoute/GetByRVD?id=";
+      var coesaRoutesUrl = coesaApiUrl + "Route/List/All";
+    
+      function getResposta(data) {
+        console.log(data);
+      }
+    
+      function autorun() {
+        // Run this on DOM load
+        initializeMap();
+        getApiData(coesaRoutesUrl, "", "logResposta");
+        
+        // Para pegar tudo da Coesa:
+        // Pegar RouteVariantDirection/GetActiveByRoute?route=423
+        // Usar os IDs para pegar as paradas com BusStopRoute/GetByRVD?id=rvd_id
+        // Pegar todas as rotas que contém o número pesquisado com Route/List/All (ex: 423 = 423, 2423 e 423A)
+        // Pegar a posição dos ônibus para cada rota encontrada acima e atualizar os marcadores
+        // Estrutura dos marcadores: hash, com key = placa do ônibus, val = marker
+        // Estrutura do hash de ônibus: key = placa do ônibus, val = ônibus
+      }
+    
+      function initializeMap() {
+        // Initialize Google Maps
+        var mapOptions = { center: { lat: -22.9, lng: -43.25}, zoom: 12 };
+        var map = new google.maps.Map(document.getElementById('map-canvas'), mapOptions);
+      }
+      
+      function getApiData(apiUrl, param, callback) {
+        finalUrl = (param == "") ? apiUrl + param + "&callback=" + callback : apiUrl + "?callback=" + callback;
+        $.ajax({
+          url: finalUrl,
+          crossDomain: true,
+          jsonp: true,
+          //jsonpCallback: callback
+        });
+      }
+      
+      function getGPSData(routeNumber) {
+        // Read GPS JSON
+        $.getJSON(coesaGPSUrl + routeNumber, function(data) {
+          $.each(data, function(key, val) {
+            console.log(val);
+//            alert("Key: " + key + ", Val: " + val);
+          });
+        });
+      }
+      
+      function getRoute(routeNumber) {
+        // Read route JSON
+      }
+      
+      if (document.addEventListener) document.addEventListener("DOMContentLoaded", autorun, false);
+      else if (document.attachEvent) document.attachEvent("onreadystatechange", autorun);
+      else window.onload = autorun;
+    </script>
+    
+    <style type="text/css">
+      html { height: 100% }
+      body { height: 100%; margin: 0; padding: 0 }
+      #map-canvas { height: 100% }
+    </style>
+  </body>
+</html>
